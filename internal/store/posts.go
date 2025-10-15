@@ -31,17 +31,18 @@ func (s *PostStore) Create(ctx context.Context, post *Post) error {
 	err := s.db.QueryRowContext(
 		ctx,
 		query,
-		&post.Content,
-		&post.Title,
-		&post.UserID,
+		post.Content,
+		post.Title,
+		post.UserID,
 		pq.Array(post.Tags),
 	).Scan(
 		&post.ID,
 		&post.CreatedAt,
-		&post.UpdatedAt)
+		&post.UpdatedAt,
+	)
 
 	if err != nil {
-		return nil
+		return err
 	}
 
 	return nil

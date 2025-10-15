@@ -4,6 +4,8 @@ import (
 	"context"
 	"database/sql"
 	"time"
+
+	_ "github.com/lib/pq"
 )
 
 func New(addr, maxIdleTime string, maxOpenConns, maxIdleConns int) (*sql.DB, error) {
@@ -12,7 +14,7 @@ func New(addr, maxIdleTime string, maxOpenConns, maxIdleConns int) (*sql.DB, err
 		return nil, err
 	}
 
-	db.SetMaxOpenConns(maxIdleConns)
+	db.SetMaxOpenConns(maxOpenConns)
 
 	duration, err := time.ParseDuration(maxIdleTime)
 	if err != nil {
