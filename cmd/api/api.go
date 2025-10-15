@@ -4,6 +4,9 @@ import (
 	"log"
 	"net/http"
 	"time"
+
+	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/chi/v5/middleware"
 )
 
 type application struct {
@@ -19,15 +22,23 @@ func (app *application) checkHealthHandler(w http.ResponseWriter, r *http.Reques
 	w.Write([]byte(`{"status": "healthy"}`))
 }
 
-func (app *application) mount() *http.ServeMux {
-	mux := http.NewServeMux()
+func (app *application) mount() *chi.Mux {
+	v1Router := chi.NewRouter()
 
-	mux.HandleFunc("GET /v1/health", app.checkHealthHandler)
+	v1Router.Use(middleware.Recoverer)
+	v1Router.Use(middleware.RealIP)
+	v1Router.Use(middleware.Logger)
+	v1Router.Use(middleware.RequestID)
 
-	return mux
+	// ? Each request handled by `v1Router` must complete within 60 seconds, or it will be automatically canceled.
+	v1Router.Use(middleware.Timeout(time.Second * 60))
+
+	v1Router.Get("/v1/health", app.checkHealthHandler)
+
+	return v1Router
 }
 
-func (app *application) run(mux *http.ServeMux) error {
+func (app *application) run(mux *chi.Mux) error {
 	server := &http.Server{
 		Addr:         app.config.addr,
 		Handler:      mux,

@@ -1,2 +1,6 @@
-# Binaries Directory
+# Binaries directory
 bin
+
+# Environment variables
+.env
+.env*
